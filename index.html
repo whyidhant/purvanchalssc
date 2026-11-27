@@ -1,0 +1,732 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Purvanchal SSC | CGL PrepHub & Resource Tracker</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        body { font-family: 'Inter', sans-serif; background-color: #f8fafc; }
+        .tab-active { background-color: #1e40af; color: white; }
+        .glass-card { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); border: 1px solid #e2e8f0; }
+    </style>
+</head>
+<body class="text-slate-800">
+
+    <!-- Navbar -->
+    <nav class="bg-blue-900 text-white shadow-lg sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16 items-center">
+                <div class="flex items-center space-x-3">
+                    <div class="bg-amber-400 text-blue-950 p-2 rounded-lg font-bold text-xl">
+                        <i class="fas fa-graduation-cap"></i>
+                    </div>
+                    <div>
+                        <span class="font-bold text-xl tracking-tight">PURVANCHAL SSC</span>
+                        <span class="block text-xs text-blue-200">CGL Preparation & Resource Hub</span>
+                    </div>
+                </div>
+                <div class="hidden md:flex space-x-2" id="nav-tabs">
+                    <button onclick="switchTab('dashboard')" data-tab="dashboard" class="nav-btn tab-active px-4 py-2 rounded-lg text-sm font-medium transition">Dashboard</button>
+                    <button onclick="switchTab('syllabus')" data-tab="syllabus" class="nav-btn px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-800 transition">Syllabus Tracker</button>
+                    <button onclick="switchTab('vault')" data-tab="vault" class="nav-btn px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-800 transition">Material Vault</button>
+                    <button onclick="switchTab('mocks')" data-tab="mocks" class="nav-btn px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-800 transition">Mock Tracker</button>
+                    <button onclick="switchTab('timer')" data-tab="timer" class="nav-btn px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-800 transition">Focus & Planner</button>
+                </div>
+            </div>
+        </div>
+        <!-- Mobile Nav -->
+        <div class="md:hidden flex overflow-x-auto bg-blue-950 px-2 py-2 space-x-2">
+            <button onclick="switchTab('dashboard')" data-tab="dashboard" class="nav-btn tab-active px-3 py-1.5 rounded text-xs whitespace-nowrap">Dashboard</button>
+            <button onclick="switchTab('syllabus')" data-tab="syllabus" class="nav-btn px-3 py-1.5 rounded text-xs whitespace-nowrap text-blue-200">Syllabus</button>
+            <button onclick="switchTab('vault')" data-tab="vault" class="nav-btn px-3 py-1.5 rounded text-xs whitespace-nowrap text-blue-200">Vault</button>
+            <button onclick="switchTab('mocks')" data-tab="mocks" class="nav-btn px-3 py-1.5 rounded text-xs whitespace-nowrap text-blue-200">Mocks</button>
+            <button onclick="switchTab('timer')" data-tab="timer" class="nav-btn px-3 py-1.5 rounded text-xs whitespace-nowrap text-blue-200">Focus Timer</button>
+        </div>
+    </nav>
+
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+
+        <!-- DASHBOARD TAB -->
+        <section id="tab-dashboard" class="tab-content space-y-6">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+                <!-- Countdown Card -->
+                <div class="glass-card rounded-2xl p-6 shadow-sm border-l-4 border-amber-500">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <p class="text-xs font-semibold uppercase tracking-wider text-slate-500">Target Exam Countdown</p>
+                            <h3 id="countdown-days" class="text-3xl font-bold text-slate-900 mt-1">-- Days</h3>
+                        </div>
+                        <button onclick="editExamDate()" class="text-blue-600 hover:text-blue-800 text-xs font-medium bg-blue-50 px-2 py-1 rounded">Edit Date</button>
+                    </div>
+                    <p id="exam-date-label" class="text-xs text-slate-500 mt-3">Target: Not Set</p>
+                </div>
+
+                <!-- Syllabus Progress -->
+                <div class="glass-card rounded-2xl p-6 shadow-sm border-l-4 border-blue-600">
+                    <p class="text-xs font-semibold uppercase tracking-wider text-slate-500">Syllabus Completion</p>
+                    <h3 id="dash-syllabus-pct" class="text-3xl font-bold text-blue-700 mt-1">0%</h3>
+                    <div class="w-full bg-slate-200 rounded-full h-2 mt-3">
+                        <div id="dash-syllabus-bar" class="bg-blue-600 h-2 rounded-full transition-all duration-500" style="width: 0%"></div>
+                    </div>
+                </div>
+
+                <!-- Avg Mock Score -->
+                <div class="glass-card rounded-2xl p-6 shadow-sm border-l-4 border-emerald-500">
+                    <p class="text-xs font-semibold uppercase tracking-wider text-slate-500">Avg Mock Score</p>
+                    <h3 id="dash-mock-avg" class="text-3xl font-bold text-emerald-600 mt-1">0%</h3>
+                    <p id="dash-mock-count" class="text-xs text-slate-500 mt-3">0 Mocks Attempted</p>
+                </div>
+
+                <!-- Study Hours -->
+                <div class="glass-card rounded-2xl p-6 shadow-sm border-l-4 border-purple-600">
+                    <p class="text-xs font-semibold uppercase tracking-wider text-slate-500">Total Focus Hours</p>
+                    <h3 id="dash-study-hours" class="text-3xl font-bold text-purple-700 mt-1">0.0 hrs</h3>
+                    <p id="dash-today-hours" class="text-xs text-slate-500 mt-3">Today: 0 mins</p>
+                </div>
+            </div>
+
+            <!-- Subject Breakdown & Quick Actions -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div class="lg:col-span-2 glass-card rounded-2xl p-6 shadow-sm">
+                    <h3 class="text-lg font-bold text-slate-800 mb-4">Subject-Wise Syllabus Mastery</h3>
+                    <div id="subject-progress-list" class="space-y-4"></div>
+                </div>
+
+                <div class="glass-card rounded-2xl p-6 shadow-sm flex flex-col justify-between">
+                    <div>
+                        <h3 class="text-lg font-bold text-slate-800 mb-4">Quick Actions</h3>
+                        <div class="space-y-3">
+                            <button onclick="switchTab('vault')" class="w-full flex items-center justify-between p-3 rounded-xl bg-blue-50 hover:bg-blue-100 text-blue-900 font-medium transition">
+                                <span><i class="fas fa-cloud-upload-alt mr-2 text-blue-600"></i> Upload Notes / PDF</span>
+                                <i class="fas fa-chevron-right text-xs"></i>
+                            </button>
+                            <button onclick="switchTab('mocks')" class="w-full flex items-center justify-between p-3 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-900 font-medium transition">
+                                <span><i class="fas fa-chart-line mr-2 text-emerald-600"></i> Log New Mock Score</span>
+                                <i class="fas fa-chevron-right text-xs"></i>
+                            </button>
+                            <button onclick="switchTab('timer')" class="w-full flex items-center justify-between p-3 rounded-xl bg-purple-50 hover:bg-purple-100 text-purple-900 font-medium transition">
+                                <span><i class="fas fa-stopwatch mr-2 text-purple-600"></i> Start Study Timer</span>
+                                <i class="fas fa-chevron-right text-xs"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="mt-6 pt-4 border-t border-slate-100 flex justify-between items-center">
+                        <span class="text-xs text-slate-400">Backup your tracker progress:</span>
+                        <button onclick="exportBackup()" class="text-xs bg-slate-800 text-white px-3 py-1.5 rounded-lg hover:bg-slate-700">Export JSON</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SYLLABUS TRACKER TAB -->
+        <section id="tab-syllabus" class="tab-content hidden space-y-6">
+            <div class="glass-card rounded-2xl p-6 shadow-sm">
+                <div class="flex flex-col md:flex-row justify-between md:items-center gap-4 mb-6">
+                    <div>
+                        <h2 class="text-xl font-bold text-slate-800">SSC CGL Tier 1 & Tier 2 Syllabus</h2>
+                        <p class="text-sm text-slate-500">Click any status pill to cycle: Not Started → In Progress → Completed</p>
+                    </div>
+                    <div class="flex flex-wrap gap-2">
+                        <select id="syllabus-subject-filter" onchange="renderSyllabus()" class="border border-slate-300 rounded-lg px-3 py-2 text-sm">
+                            <option value="ALL">All Subjects</option>
+                            <option value="Quantitative Aptitude">Quantitative Aptitude</option>
+                            <option value="Reasoning">General Intelligence & Reasoning</option>
+                            <option value="English">English Comprehension</option>
+                            <option value="General Awareness">General Awareness</option>
+                            <option value="Computer">Computer Knowledge (Tier 2)</option>
+                        </select>
+                        <button onclick="addCustomTopic()" class="bg-blue-700 hover:bg-blue-800 text-white px-4 py-2 rounded-lg text-sm font-medium">+ Add Topic</button>
+                    </div>
+                </div>
+                <div id="syllabus-container" class="space-y-6"></div>
+            </div>
+        </section>
+
+        <!-- STUDY MATERIAL VAULT TAB -->
+        <section id="tab-vault" class="tab-content hidden space-y-6">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- Upload Form -->
+                <div class="glass-card rounded-2xl p-6 shadow-sm h-fit">
+                    <h2 class="text-lg font-bold text-slate-800 mb-4"><i class="fas fa-folder-plus text-blue-600 mr-2"></i>Upload Study Material</h2>
+                    <form id="upload-form" onsubmit="handleFileUpload(event)" class="space-y-4">
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Title / Topic Name</label>
+                            <input type="text" id="file-title" required placeholder="e.g., Geometry Formula Sheet" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Subject</label>
+                            <select id="file-subject" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm">
+                                <option value="Quantitative Aptitude">Quantitative Aptitude</option>
+                                <option value="Reasoning">Reasoning</option>
+                                <option value="English">English Comprehension</option>
+                                <option value="General Awareness">General Awareness</option>
+                                <option value="Computer">Computer Knowledge</option>
+                                <option value="Previous Year Papers">Previous Year Papers</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Tags (comma separated)</label>
+                            <input type="text" id="file-tags" placeholder="PYQ, Tier-2, Short Tricks" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Select File (PDF, Image, Note)</label>
+                            <input type="file" id="file-input" required class="w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
+                        </div>
+                        <button type="submit" class="w-full bg-blue-700 hover:bg-blue-800 text-white font-semibold py-2.5 rounded-lg transition">Save to Vault</button>
+                    </form>
+                </div>
+
+                <!-- File List -->
+                <div class="lg:col-span-2 glass-card rounded-2xl p-6 shadow-sm">
+                    <div class="flex flex-col sm:flex-row justify-between sm:items-center gap-3 mb-4">
+                        <h2 class="text-lg font-bold text-slate-800">My Saved Study Resources</h2>
+                        <input type="text" id="vault-search" onkeyup="renderVault()" placeholder="Search title or tags..." class="border border-slate-300 rounded-lg px-3 py-1.5 text-sm">
+                    </div>
+                    <div id="vault-list" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- MOCK TEST TRACKER TAB -->
+        <section id="tab-mocks" class="tab-content hidden space-y-6">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div class="glass-card rounded-2xl p-6 shadow-sm h-fit">
+                    <h2 class="text-lg font-bold text-slate-800 mb-4">Log Mock Test Score</h2>
+                    <form onsubmit="addMockScore(event)" class="space-y-4">
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Mock Name / Platform</label>
+                            <input type="text" id="mock-name" required placeholder="e.g., Oliveboard Live Mock #4" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm">
+                        </div>
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Tier / Type</label>
+                                <select id="mock-tier" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm">
+                                    <option value="Tier 1">Tier 1 (200)</option>
+                                    <option value="Tier 2">Tier 2 (390)</option>
+                                    <option value="Sectional">Sectional</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Date</label>
+                                <input type="date" id="mock-date" required class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm">
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Marks Scored</label>
+                                <input type="number" step="0.5" id="mock-score" required placeholder="142.5" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Max Marks</label>
+                                <input type="number" id="mock-max" required value="200" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm">
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Percentile / Accuracy %</label>
+                            <input type="number" step="0.1" id="mock-acc" placeholder="88.5" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm">
+                        </div>
+                        <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-2.5 rounded-lg transition">Add Mock Record</button>
+                    </form>
+                </div>
+
+                <div class="lg:col-span-2 space-y-6">
+                    <div class="glass-card rounded-2xl p-6 shadow-sm">
+                        <h3 class="text-lg font-bold text-slate-800 mb-3">Score Trend (%)</h3>
+                        <canvas id="mockChart" height="110"></canvas>
+                    </div>
+                    <div class="glass-card rounded-2xl p-6 shadow-sm overflow-x-auto">
+                        <h3 class="text-lg font-bold text-slate-800 mb-3">Attempt History</h3>
+                        <table class="w-full text-left text-sm">
+                            <thead>
+                                <tr class="border-b text-slate-500">
+                                    <th class="pb-2">Mock Name</th>
+                                    <th class="pb-2">Tier</th>
+                                    <th class="pb-2">Score</th>
+                                    <th class="pb-2">%</th>
+                                    <th class="pb-2">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="mock-table-body"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- FOCUS TIMER & PLANNER TAB -->
+        <section id="tab-timer" class="tab-content hidden space-y-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="glass-card rounded-2xl p-8 shadow-sm text-center">
+                    <h2 class="text-xl font-bold text-slate-800 mb-2">Study Focus Timer</h2>
+                    <p class="text-xs text-slate-500 mb-6">Completed sessions automatically log to your total study hours</p>
+                    <div class="flex justify-center space-x-2 mb-6">
+                        <button onclick="setTimerMode(25)" class="px-3 py-1 rounded-full text-xs font-semibold bg-blue-100 text-blue-800">Pomodoro (25m)</button>
+                        <button onclick="setTimerMode(60)" class="px-3 py-1 rounded-full text-xs font-semibold bg-amber-100 text-amber-800">Tier-1 Mock (60m)</button>
+                        <button onclick="setTimerMode(120)" class="px-3 py-1 rounded-full text-xs font-semibold bg-purple-100 text-purple-800">Deep Study (120m)</button>
+                    </div>
+                    <div id="timer-display" class="text-6xl font-mono font-bold text-slate-900 my-6">25:00</div>
+                    <div class="flex justify-center space-x-4">
+                        <button onclick="startTimer()" class="bg-blue-700 hover:bg-blue-800 text-white px-6 py-2.5 rounded-xl font-semibold"><i class="fas fa-play mr-1"></i> Start</button>
+                        <button onclick="pauseTimer()" class="bg-amber-500 hover:bg-amber-600 text-white px-6 py-2.5 rounded-xl font-semibold"><i class="fas fa-pause mr-1"></i> Pause</button>
+                        <button onclick="resetTimer()" class="bg-slate-200 hover:bg-slate-300 text-slate-800 px-6 py-2.5 rounded-xl font-semibold">Reset</button>
+                    </div>
+                </div>
+
+                <div class="glass-card rounded-2xl p-6 shadow-sm">
+                    <h2 class="text-xl font-bold text-slate-800 mb-4">Daily Study Checklist</h2>
+                    <div class="flex gap-2 mb-4">
+                        <input type="text" id="todo-input" placeholder="e.g., Solve 50 Trigonometry PYQs..." class="flex-1 border border-slate-300 rounded-lg px-3 py-2 text-sm">
+                        <button onclick="addTodo()" class="bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-semibold">Add</button>
+                    </div>
+                    <ul id="todo-list" class="space-y-2"></ul>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- File Preview Modal -->
+    <div id="preview-modal" class="fixed inset-0 bg-black/70 hidden items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-2xl max-w-4xl w-full max-h-[90vh] flex flex-col overflow-hidden">
+            <div class="flex justify-between items-center p-4 border-b">
+                <h3 id="modal-title" class="font-bold text-slate-800">Preview</h3>
+                <button onclick="closeModal()" class="text-slate-500 hover:text-slate-800 text-xl">&times;</button>
+            </div>
+            <div id="modal-body" class="p-4 overflow-auto flex-1 flex justify-center items-center bg-slate-100"></div>
+        </div>
+    </div>
+
+    <script>
+        // DEFAULT SYLLABUS DATA
+        const defaultSyllabus = [
+            { id: 1, subject: "Quantitative Aptitude", topic: "Percentage, Ratio & Proportion", status: "Not Started" },
+            { id: 2, subject: "Quantitative Aptitude", topic: "Profit, Loss & Discount", status: "Not Started" },
+            { id: 3, subject: "Quantitative Aptitude", topic: "Time, Speed, Distance & Work", status: "Not Started" },
+            { id: 4, subject: "Quantitative Aptitude", topic: "Geometry & Mensuration (2D/3D)", status: "Not Started" },
+            { id: 5, subject: "Quantitative Aptitude", topic: "Trigonometry & Height-Distance", status: "Not Started" },
+            { id: 6, subject: "Quantitative Aptitude", topic: "Algebra & Number System", status: "Not Started" },
+            { id: 7, subject: "Reasoning", topic: "Analogy, Classification & Series", status: "Not Started" },
+            { id: 8, subject: "Reasoning", topic: "Coding-Decoding & Blood Relations", status: "Not Started" },
+            { id: 9, subject: "Reasoning", topic: "Syllogism & Venn Diagrams", status: "Not Started" },
+            { id: 10, subject: "Reasoning", topic: "Non-Verbal & Paper Folding", status: "Not Started" },
+            { id: 11, subject: "English", topic: "Grammar Rules & Error Spotting", status: "Not Started" },
+            { id: 12, subject: "English", topic: "Vocabulary (Synonyms, Antonyms, OWS, Idioms)", status: "Not Started" },
+            { id: 13, subject: "English", topic: "Reading Comprehension & Cloze Test", status: "Not Started" },
+            { id: 14, subject: "English", topic: "Active-Passive & Direct-Indirect Speech", status: "Not Started" },
+            { id: 15, subject: "General Awareness", topic: "Indian History & National Movement", status: "Not Started" },
+            { id: 16, subject: "General Awareness", topic: "Indian Polity & Constitution", status: "Not Started" },
+            { id: 17, subject: "General Awareness", topic: "Geography & Economics", status: "Not Started" },
+            { id: 18, subject: "General Awareness", topic: "Static GK & Current Affairs (Last 12 Months)", status: "Not Started" },
+            { id: 19, subject: "Computer", topic: "Computer Architecture, Memory & Networking", status: "Not Started" },
+            { id: 20, subject: "Computer", topic: "MS Office (Word, Excel, PowerPoint) & Cyber Security", status: "Not Started" }
+        ];
+
+        let syllabus = JSON.parse(localStorage.getItem('pssc_syllabus')) || defaultSyllabus;
+        let mocks = JSON.parse(localStorage.getItem('pssc_mocks')) || [];
+        let todos = JSON.parse(localStorage.getItem('pssc_todos')) || [];
+        let studyMinutes = parseInt(localStorage.getItem('pssc_minutes')) || 0;
+        let examDate = localStorage.getItem('pssc_exam_date') || "";
+
+        // INDEXED DB FOR FILE VAULT
+        let db;
+        const request = indexedDB.open("PurvanchalSSCVault", 1);
+        request.onupgradeneeded = e => {
+            db = e.target.result;
+            db.createObjectStore("files", { keyPath: "id", autoIncrement: true });
+        };
+        request.onsuccess = e => {
+            db = e.target.result;
+            renderVault();
+        };
+
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            document.getElementById('tab-' + tabId).classList.remove('hidden');
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                btn.classList.remove('tab-active');
+                if(btn.dataset.tab === tabId) btn.classList.add('tab-active');
+            });
+            if(tabId === 'dashboard') updateDashboard();
+            if(tabId === 'mocks') renderMocks();
+        }
+
+        // SYLLABUS FUNCTIONS
+        function renderSyllabus() {
+            const filter = document.getElementById('syllabus-subject-filter').value;
+            const container = document.getElementById('syllabus-container');
+            container.innerHTML = '';
+            const subjects = ["Quantitative Aptitude", "Reasoning", "English", "General Awareness", "Computer"];
+            
+            subjects.forEach(sub => {
+                if (filter !== "ALL" && filter !== sub) return;
+                const items = syllabus.filter(s => s.subject === sub);
+                if (!items.length) return;
+                
+                let html = `<div class="border border-slate-200 rounded-xl overflow-hidden">
+                    <div class="bg-slate-100 px-4 py-3 font-bold text-slate-700 flex justify-between">
+                        <span>${sub}</span>
+                        <span class="text-xs font-normal text-slate-500">${items.filter(i=>i.status==='Completed').length}/${items.length} Completed</span>
+                    </div>
+                    <div class="divide-y divide-slate-100">`;
+                
+                items.forEach(item => {
+                    const badgeClass = item.status === 'Completed' ? 'bg-emerald-100 text-emerald-800' : 
+                                       item.status === 'In Progress' ? 'bg-amber-100 text-amber-800' : 'bg-slate-100 text-slate-600';
+                    html += `<div class="px-4 py-3 flex justify-between items-center hover:bg-slate-50">
+                        <span class="text-sm font-medium text-slate-700">${item.topic}</span>
+                        <button onclick="cycleStatus(${item.id})" class="${badgeClass} px-3 py-1 rounded-full text-xs font-semibold transition">${item.status}</button>
+                    </div>`;
+                });
+                html += `</div></div>`;
+                container.innerHTML += html;
+            });
+        }
+
+        function cycleStatus(id) {
+            const order = ["Not Started", "In Progress", "Completed"];
+            const item = syllabus.find(s => s.id === id);
+            item.status = order[(order.indexOf(item.status) + 1) % order.length];
+            localStorage.setItem('pssc_syllabus', JSON.stringify(syllabus));
+            renderSyllabus();
+            updateDashboard();
+        }
+
+        function addCustomTopic() {
+            const topic = prompt("Enter new topic name:");
+            if (!topic) return;
+            const subject = document.getElementById('syllabus-subject-filter').value === "ALL" ? "Quantitative Aptitude" : document.getElementById('syllabus-subject-filter').value;
+            syllabus.push({ id: Date.now(), subject, topic, status: "Not Started" });
+            localStorage.setItem('pssc_syllabus', JSON.stringify(syllabus));
+            renderSyllabus();
+            updateDashboard();
+        }
+
+        // VAULT FUNCTIONS
+        const publicPdfFiles = [
+            "01. ALGEBRA FRB - BY BHUTESH SIR..pdf",
+            "02. CIRCLES FRB - BY BHUTESH SIR.pdf",
+            "03. TRIANGLE FRB - BY BHUTESH SIR.pdf",
+            "04. QUADRILATERALS, PLOYGONS, LINE & ANGLES - BY BHUTESH SIR.pdf",
+            "05. PERCENTAGE FRB - BY BHUTESH SIR.pdf",
+            "06. SIMPLE INTEREST FRB - BY BHUTESH SIR.pdf",
+            "07. COMPOUND INTEREST FRB - BY BHUTESH SIR.pdf",
+            "08. INSTALLMENT FRB - BY BHUTESH SIR.pdf",
+            "09. PROFIT AND LOSS FRB - BY BHUTESH SIR.pdf",
+            "10. MENSURATION 3D FRB - BY BHUTESH SIR.pdf",
+            "11. MENSURATION 2D FRB - BY BHUTESH SIR.pdf",
+            "12. TIME AND WORK FRB - BY BHUTESH SIR.pdf",
+            "13. COORDINATE GEOMETRY FRB - BY BHUTESH SIR.pdf",
+            "14. MIXTURE & ALLIGATION - BY BHUTESH SIR.pdf",
+            "15. TIME AND DISTANCE FRB - BY BHUTESH SIR.pdf",
+            "16. POLICE AND THIEF FRB - BY BHUTESH SIR.pdf",
+            "20. BOATS & STREAMS FRB - BY BHUTESH SIR.pdf",
+            "21. TRAIN PROBLEMS FRB - BY BHUTESH SIR.pdf",
+            "22. CALCULATION BOOSTER.pdf",
+            "22. RACES - BY BHUTESH SIR.pdf"
+        ];
+
+        function handleFileUpload(e) {
+            e.preventDefault();
+            const file = document.getElementById('file-input').files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(evt) {
+                const record = {
+                    title: document.getElementById('file-title').value,
+                    subject: document.getElementById('file-subject').value,
+                    tags: document.getElementById('file-tags').value,
+                    fileName: file.name,
+                    fileType: file.type,
+                    data: evt.target.result,
+                    date: new Date().toLocaleDateString()
+                };
+                const tx = db.transaction(["files"], "readwrite");
+                tx.objectStore("files").add(record);
+                tx.oncomplete = () => {
+                    document.getElementById('upload-form').reset();
+                    renderVault();
+                };
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function renderVault() {
+            if (!db) return;
+            const query = document.getElementById('vault-search').value.toLowerCase();
+            const list = document.getElementById('vault-list');
+            list.innerHTML = '';
+            const tx = db.transaction(["files"], "readonly");
+            tx.objectStore("files").getAll().onsuccess = e => {
+                const uploadedFiles = e.target.result.filter(f => f.title.toLowerCase().includes(query) || f.tags.toLowerCase().includes(query) || f.subject.toLowerCase().includes(query));
+                const staticFiles = publicPdfFiles
+                    .filter(fileName => fileName.toLowerCase().includes(query))
+                    .map(fileName => ({
+                        title: fileName.replace(/\.pdf$/i, ''),
+                        subject: 'Quantitative Aptitude',
+                        fileName,
+                        url: '/public/materials/frb%20maths/' + encodeURIComponent(fileName),
+                        isPublic: true
+                    }));
+                const files = [...staticFiles, ...uploadedFiles];
+                if (!files.length) {
+                    list.innerHTML = `<p class="text-sm text-slate-400 col-span-2 text-center py-8">No study materials uploaded yet.</p>`;
+                    return;
+                }
+                files.forEach(f => {
+                    if (f.isPublic) {
+                        list.innerHTML += `<div class="border border-slate-200 rounded-xl p-4 flex flex-col justify-between bg-white">
+                            <div>
+                                <span class="text-[10px] font-bold uppercase px-2 py-0.5 rounded bg-blue-50 text-blue-700">${f.subject}</span>
+                                <h4 class="font-bold text-slate-800 mt-2">${f.title}</h4>
+                                <p class="text-xs text-slate-400 mt-1">${f.fileName}</p>
+                            </div>
+                            <div class="flex gap-2 mt-4 pt-3 border-t border-slate-100">
+                                <a href="${f.url}" target="_blank" rel="noopener" class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 py-1.5 rounded text-xs font-semibold text-center">View</a>
+                                <a href="${f.url}" download class="flex-1 bg-blue-50 hover:bg-blue-100 text-blue-700 py-1.5 rounded text-xs font-semibold text-center">Download</a>
+                            </div>
+                        </div>`;
+                        return;
+                    }
+                    list.innerHTML += `<div class="border border-slate-200 rounded-xl p-4 flex flex-col justify-between bg-white">
+                        <div>
+                            <span class="text-[10px] font-bold uppercase px-2 py-0.5 rounded bg-blue-50 text-blue-700">${f.subject}</span>
+                            <h4 class="font-bold text-slate-800 mt-2">${f.title}</h4>
+                            <p class="text-xs text-slate-400 mt-1">${f.fileName} • ${f.date}</p>
+                        </div>
+                        <div class="flex gap-2 mt-4 pt-3 border-t border-slate-100">
+                            <button onclick="previewFile(${f.id})" class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 py-1.5 rounded text-xs font-semibold">View</button>
+                            <a href="${f.data}" download="${f.fileName}" class="flex-1 bg-blue-50 hover:bg-blue-100 text-blue-700 py-1.5 rounded text-xs font-semibold text-center">Download</a>
+                            <button onclick="deleteFile(${f.id})" class="px-2.5 bg-red-50 hover:bg-red-100 text-red-600 rounded text-xs"><i class="fas fa-trash"></i></button>
+                        </div>
+                    </div>`;
+                });
+            };
+        }
+
+        function previewFile(id) {
+            const tx = db.transaction(["files"], "readonly");
+            tx.objectStore("files").get(id).onsuccess = e => {
+                const f = e.target.result;
+                document.getElementById('modal-title').innerText = f.title;
+                const body = document.getElementById('modal-body');
+                if (f.fileType.includes('image')) {
+                    body.innerHTML = `<img src="${f.data}" class="max-h-[75vh] rounded">`;
+                } else if (f.fileType.includes('pdf')) {
+                    body.innerHTML = `<iframe src="${f.data}" class="w-full h-[75vh]"></iframe>`;
+                } else {
+                    body.innerHTML = `<p class="text-sm text-slate-600">Preview not supported for this format. Click Download to open.</p>`;
+                }
+                document.getElementById('preview-modal').classList.remove('hidden');
+                document.getElementById('preview-modal').classList.add('flex');
+            };
+        }
+
+        function closeModal() {
+            document.getElementById('preview-modal').classList.add('hidden');
+            document.getElementById('preview-modal').classList.remove('flex');
+        }
+
+        function deleteFile(id) {
+            const tx = db.transaction(["files"], "readwrite");
+            tx.objectStore("files").delete(id);
+            tx.oncomplete = () => renderVault();
+        }
+
+        // MOCK TRACKER FUNCTIONS
+        let mockChartInstance = null;
+        function addMockScore(e) {
+            e.preventDefault();
+            const score = parseFloat(document.getElementById('mock-score').value);
+            const max = parseFloat(document.getElementById('mock-max').value);
+            mocks.push({
+                id: Date.now(),
+                name: document.getElementById('mock-name').value,
+                tier: document.getElementById('mock-tier').value,
+                date: document.getElementById('mock-date').value,
+                score, max,
+                pct: ((score / max) * 100).toFixed(1)
+            });
+            localStorage.setItem('pssc_mocks', JSON.stringify(mocks));
+            e.target.reset();
+            renderMocks();
+            updateDashboard();
+        }
+
+        function renderMocks() {
+            const tbody = document.getElementById('mock-table-body');
+            tbody.innerHTML = mocks.map(m => `<tr class="border-b">
+                <td class="py-2.5 font-medium">${m.name}<span class="block text-xs text-slate-400">${m.date}</span></td>
+                <td class="py-2.5 text-xs">${m.tier}</td>
+                <td class="py-2.5 font-semibold">${m.score}/${m.max}</td>
+                <td class="py-2.5 text-emerald-600 font-bold">${m.pct}%</td>
+                <td class="py-2.5"><button onclick="deleteMock(${m.id})" class="text-red-500 text-xs">Delete</button></td>
+            </tr>`).join('');
+
+            const ctx = document.getElementById('mockChart').getContext('2d');
+            if (mockChartInstance) mockChartInstance.destroy();
+            mockChartInstance = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: mocks.map(m => m.name),
+                    datasets: [{
+                        label: 'Score %',
+                        data: mocks.map(m => m.pct),
+                        borderColor: '#1d4ed8',
+                        backgroundColor: 'rgba(29, 78, 216, 0.1)',
+                        fill: true,
+                        tension: 0.3
+                    }]
+                }
+            });
+        }
+
+        function deleteMock(id) {
+            mocks = mocks.filter(m => m.id !== id);
+            localStorage.setItem('pssc_mocks', JSON.stringify(mocks));
+            renderMocks();
+            updateDashboard();
+        }
+
+        // TIMER & TODO FUNCTIONS
+        let timerSeconds = 25 * 60;
+        let currentModeMins = 25;
+        let timerInterval = null;
+
+        function setTimerMode(mins) {
+            pauseTimer();
+            currentModeMins = mins;
+            timerSeconds = mins * 60;
+            updateTimerDisplay();
+        }
+
+        function updateTimerDisplay() {
+            const m = String(Math.floor(timerSeconds / 60)).padStart(2, '0');
+            const s = String(timerSeconds % 60).padStart(2, '0');
+            document.getElementById('timer-display').innerText = `${m}:${s}`;
+        }
+
+        function startTimer() {
+            if (timerInterval) return;
+            timerInterval = setInterval(() => {
+                if (timerSeconds > 0) {
+                    timerSeconds--;
+                    updateTimerDisplay();
+                } else {
+                    pauseTimer();
+                    studyMinutes += currentModeMins;
+                    localStorage.setItem('pssc_minutes', studyMinutes);
+                    updateDashboard();
+                    alert("Focus session completed! Logged " + currentModeMins + " mins.");
+                }
+            }, 1000);
+        }
+
+        function pauseTimer() { clearInterval(timerInterval); timerInterval = null; }
+        function resetTimer() { pauseTimer(); timerSeconds = currentModeMins * 60; updateTimerDisplay(); }
+
+        function addTodo() {
+            const input = document.getElementById('todo-input');
+            if (!input.value.trim()) return;
+            todos.push({ id: Date.now(), text: input.value, done: false });
+            input.value = '';
+            localStorage.setItem('pssc_todos', JSON.stringify(todos));
+            renderTodos();
+        }
+
+        function renderTodos() {
+            document.getElementById('todo-list').innerHTML = todos.map(t => `
+                <li class="flex items-center justify-between p-2.5 rounded-lg bg-slate-50 border border-slate-200">
+                    <label class="flex items-center space-x-2 cursor-pointer">
+                        <input type="checkbox" ${t.done ? 'checked' : ''} onchange="toggleTodo(${t.id})">
+                        <span class="text-sm ${t.done ? 'line-through text-slate-400' : ''}">${t.text}</span>
+                    </label>
+                    <button onclick="deleteTodo(${t.id})" class="text-xs text-red-500">Remove</button>
+                </li>
+            `).join('');
+        }
+
+        function toggleTodo(id) {
+            const t = todos.find(x => x.id === id);
+            t.done = !t.done;
+            localStorage.setItem('pssc_todos', JSON.stringify(todos));
+            renderTodos();
+        }
+
+        function deleteTodo(id) {
+            todos = todos.filter(x => x.id !== id);
+            localStorage.setItem('pssc_todos', JSON.stringify(todos));
+            renderTodos();
+        }
+
+        // DASHBOARD UPDATES
+        function editExamDate() {
+            const d = prompt("Enter Target SSC CGL Exam Date (YYYY-MM-DD):", examDate || "2026-09-15");
+            if (d) {
+                examDate = d;
+                localStorage.setItem('pssc_exam_date', examDate);
+                updateDashboard();
+            }
+        }
+
+        function updateDashboard() {
+            // Countdown
+            if (examDate) {
+                const diff = Math.ceil((new Date(examDate) - new Date()) / (1000 * 60 * 60 * 24));
+                document.getElementById('countdown-days').innerText = diff > 0 ? `${diff} Days` : "Exam Day!";
+                document.getElementById('exam-date-label').innerText = `Target: ${examDate}`;
+            }
+
+            // Syllabus %
+            const completed = syllabus.filter(s => s.status === 'Completed').length;
+            const pct = Math.round((completed / syllabus.length) * 100) || 0;
+            document.getElementById('dash-syllabus-pct').innerText = pct + "%";
+            document.getElementById('dash-syllabus-bar').style.width = pct + "%";
+
+            // Mock Avg
+            if (mocks.length) {
+                const avg = (mocks.reduce((acc, m) => acc + parseFloat(m.pct), 0) / mocks.length).toFixed(1);
+                document.getElementById('dash-mock-avg').innerText = avg + "%";
+            }
+            document.getElementById('dash-mock-count').innerText = `${mocks.length} Mocks Attempted`;
+
+            // Hours
+            document.getElementById('dash-study-hours').innerText = (studyMinutes / 60).toFixed(1) + " hrs";
+            document.getElementById('dash-today-hours').innerText = `Logged: ${studyMinutes} mins`;
+
+            // Subject bars
+            const subjects = ["Quantitative Aptitude", "Reasoning", "English", "General Awareness", "Computer"];
+            document.getElementById('subject-progress-list').innerHTML = subjects.map(sub => {
+                const subItems = syllabus.filter(s => s.subject === sub);
+                const subComp = subItems.filter(s => s.status === 'Completed').length;
+                const subPct = Math.round((subComp / subItems.length) * 100) || 0;
+                return `<div>
+                    <div class="flex justify-between text-xs font-semibold mb-1">
+                        <span>${sub}</span><span>${subPct}%</span>
+                    </div>
+                    <div class="w-full bg-slate-100 rounded-full h-2">
+                        <div class="bg-blue-600 h-2 rounded-full" style="width: ${subPct}%"></div>
+                    </div>
+                </div>`;
+            }).join('');
+        }
+
+        function exportBackup() {
+            const data = JSON.stringify({ syllabus, mocks, todos, studyMinutes, examDate });
+            const blob = new Blob([data], { type: "application/json" });
+            const a = document.createElement("a");
+            a.href = URL.createObjectURL(blob);
+            a.download = "purvanchal-ssc-backup.json";
+            a.click();
+        }
+
+        // INIT
+        renderSyllabus();
+        renderTodos();
+        updateDashboard();
+    </script>
+</body>
+</html>
